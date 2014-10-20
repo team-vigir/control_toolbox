@@ -305,8 +305,16 @@ double Pid::updatePid(double error, ros::Duration dt)
   double p_term, d_term;
   p_error_ = error; //this is pError = pState-pTarget
 
-  if (dt == ros::Duration(0.0) || std::isnan(error) || std::isinf(error))
+  if (dt == ros::Duration(0.0))
+  {
+      return cmd_;
+  }
+  else if (std::isnan(error) || std::isinf(error) )
+  {
+    i_term_ = 0.0;
+    cmd_    = 0.0;
     return 0.0;
+  }
 
   // Calculate proportional contribution to command
   p_term = gains.p_gain_ * p_error_;
@@ -339,9 +347,16 @@ double Pid::computeCommand(double error, double error_dot, ros::Duration dt)
   p_error_ = error; // this is error = target - state
   d_error_ = error_dot;
 
-  if (dt == ros::Duration(0.0) || std::isnan(error) || std::isinf(error) || std::isnan(error_dot) || std::isinf(error_dot))
+  if (dt == ros::Duration(0.0))
+  {
+      return cmd_;
+  }
+  else if (std::isnan(error) || std::isinf(error) || std::isnan(error_dot) || std::isinf(error_dot))
+  {
+    i_term_ = 0.0;
+    cmd_    = 0.0;
     return 0.0;
-
+  }
 
   // Calculate proportional contribution to command
   p_term = gains.p_gain_ * p_error_;
