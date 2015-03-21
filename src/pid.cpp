@@ -180,6 +180,46 @@ void Pid::reset()
   cmd_ = 0.0;
 }
 
+/*!
+ * \brief Reset the state of this PID controller by initialize integral to give bumpless command
+ */
+void Pid::resetIntegral(double error, double current_command)
+{
+    // Get the gain parameters from the realtime buffer
+    Gains gains = *gains_buffer_.readFromRT();
+
+    p_error_ = error; // this is error = target - state
+    d_error_ = 0.0;   // assume zero derivative at start
+
+    p_error_last_ = p_error_;
+    i_term_  = 0.0;
+    cmd_ = 0.0;
+
+    if (std::isnan(error) || std::isinf(error))
+    { // return if any error
+      return;
+    }
+
+    // Calculate the integral term required to give bumpless transfer (assuming equal intial commands)
+    // and an active controller (if identically zero, then skip this step assuming initial transfer)
+    if (gains.i_gain_ > 0.0 && fabs(current_command) > 0.0)
+    {
+        double p_term;
+        // Calculate proportional contribution to command
+        p_term = gains.p_gain_ * p_error_;
+
+        // Calculate integral required to give the current command output (assuming zero derivative)
+        i_term_ = current_command - p_term ;
+
+        // Limit i_term_ so that the limit is meaningful in the output
+        i_term_ = std::max( gains.i_min_, std::min( i_term_, gains.i_max_) );
+
+        // Store the internal command value give current setup
+        cmd_ = p_term + i_term_;
+        ROS_WARN("      Initializing integral term = %f for command output = %f  (%f)", i_term_, cmd_, current_command);
+    }
+}
+
 void Pid::getGains(double &p, double &i, double &d, double &i_max, double &i_min)
 {
   Gains gains = *gains_buffer_.readFromRT();

@@ -222,6 +222,11 @@ public:
   void reset();
 
   /*!
+   * \brief Reset the state of this PID controller by initialize integral to give bumpless command
+   */
+  void resetIntegral(double error, double current_command);
+
+  /*!
    * \brief Get PID gains for the controller.
    * \param p  The proportional gain.
    * \param i  The integral gain.
