@@ -216,7 +216,7 @@ void Pid::resetIntegral(double error, double current_command)
 
         // Store the internal command value give current setup
         cmd_ = p_term + i_term_;
-        ROS_WARN("      Initializing integral term = %f for command output = %f  (%f)", i_term_, cmd_, current_command);
+        //ROS_DEBUG("      Initializing integral term = %f for command output = %f  (%f)", i_term_, cmd_, current_command);
     }
 }
 
